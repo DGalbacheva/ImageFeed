@@ -51,16 +51,20 @@ final class ProfileViewController: UIViewController {
     }()
     
     override func viewDidLoad() {
-        addSubViews()
+        super.viewDidLoad()
+        viewsSetting()
         applyConstrains()
     }
     
-    private func addSubViews() {
-        view.addSubview(imageView)
-        view.addSubview(nameLabel)
-        view.addSubview(loginNameLabel)
-        view.addSubview(descriptionLabel)
-        view.addSubview(logoutButton)
+    private func viewsSetting() {
+        [imageView,
+        nameLabel,
+         loginNameLabel,
+         descriptionLabel,
+         logoutButton].forEach{
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
     }
     
     private func applyConstrains() {
