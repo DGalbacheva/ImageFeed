@@ -24,6 +24,7 @@ final class OAuth2Service {
         ]
         
         guard let urlRequest = urlComponents?.url else {
+            print("URL")
             return nil
         }
         
@@ -45,10 +46,13 @@ final class OAuth2Service {
                     let responseToken = try JSONDecoder().decode(OAuthTokenResponseBody.self, from: data)
                     OAuth2TokenStorage.shared.token = responseToken.accessToken
                     completion(.success(responseToken.accessToken))
-                } catch { completion(.failure(error))
+                } catch {
+                    completion(.failure(error))
+                    print("Error decoding token response: ", error)
                 }
             case .failure(let error):
                 completion(.failure(error))
+                print("Network error: ", error)
             }
         }
         task?.resume()
