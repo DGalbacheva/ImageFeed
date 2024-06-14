@@ -15,8 +15,3 @@ enum Constants {
     static let grantType = "authorization_code"
     static let defaultBaseURL = URL(string: "https://api.unsplash.com")
 }
-
-enum WebViewConstants {
-    static let unsplashAuthorizeURLString = "https://unsplash.com/oauth/authorize"
-}
-

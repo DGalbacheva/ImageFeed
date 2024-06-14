@@ -6,8 +6,16 @@
 //
 
 import UIKit
+import Kingfisher
+
 final class ProfileViewController: UIViewController {
     
+    private let storageToken = OAuth2TokenStorage()
+    private let profileService = ProfileService.shared
+    private let profileImageService = ProfileImageService.shared
+    private var profileImageServiceObserver: NSObjectProtocol?
+    
+    //MARK: - UI elements
     private var imageView: UIImageView = {
         let avatarImage = UIImage(named: "avatar")
         let imageView = UIImageView(image: avatarImage)
@@ -50,12 +58,27 @@ final class ProfileViewController: UIViewController {
         return logoutButton
     }()
     
+    //MARK: Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         viewsSetting()
         applyConstrains()
+        
+        updateProfileDetails(profile: profileService.profile!)
+        updateAvatar()
+
+        profileImageServiceObserver = NotificationCenter.default
+            .addObserver(
+                forName: ProfileImageService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self = self else { return }
+                self.updateAvatar()
+            }
     }
     
+    //MARK: - Private methods
     private func viewsSetting() {
         [imageView,
         nameLabel,
@@ -87,4 +110,19 @@ final class ProfileViewController: UIViewController {
             logoutButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
         ])
     }
+    
+    private func updateProfileDetails(profile: ProfileService.Profile) {
+            nameLabel.text = profile.name
+            loginNameLabel.text = profile.loginName
+            descriptionLabel.text = profile.bio
+        }
+
+        private func updateAvatar() {
+            guard
+                let profileImageURL = profileImageService.profileImageURL,
+                let url = URL(string: profileImageURL)
+            else { return }
+            let processor = RoundCornerImageProcessor(cornerRadius: 61)
+            imageView.kf.setImage(with: url, options: [.processor(processor)])
+        }
 }

@@ -9,52 +9,94 @@ import Foundation
 
 final class OAuth2Service {
     static let shared = OAuth2Service()
+    private let urlSession = URLSession.shared
+    private var lastCode: String?
     private var task: URLSessionTask?
     
+    private (set) var authToken: String? {
+            get {
+                return OAuth2TokenStorage().token
+            }
+            set {
+                guard let newValue = newValue else { return }
+                OAuth2TokenStorage().token = newValue
+            } }
+
     private init(){}
     
-    private func oauthTokenRequest(code: String) -> URLRequest? {
-        var urlComponents = URLComponents(string: "https://unsplash.com/oauth/token")
-        urlComponents?.queryItems = [
-            URLQueryItem(name: "client_id", value: Constants.accessKey),
-            URLQueryItem(name: "client_secret", value: Constants.secretKey),
-            URLQueryItem(name: "redirect_uri", value: Constants.redirectURI),
-            URLQueryItem(name: "code", value: code),
-            URLQueryItem(name: "grant_type", value: Constants.grantType)
-        ]
-        
-        guard let urlRequest = urlComponents?.url else {
-            print("URL")
-            return nil
-        }
-        
-        var request = URLRequest(url: urlRequest)
-        request.httpMethod = "POST"
-        
-        return request
-    }
-    
     func fetchOAuthToken(_ code: String, completion: @escaping (Result<String, Error>) -> Void) {
-        guard let request = oauthTokenRequest(code: code) else {
+        assert(Thread.isMainThread)
+        if lastCode == code { return }
+        task?.cancel()
+        lastCode = code
+        
+        guard let request = authTokenRequest(code: code) else {
             completion(.failure(NetworkError.urlSessionError))
             return
         }
-        task = URLSession.shared.data(for: request) { result in
-            switch result{
-            case .success(let data):
-                do {
-                    let responseToken = try JSONDecoder().decode(OAuthTokenResponseBody.self, from: data)
-                    OAuth2TokenStorage.shared.token = responseToken.accessToken
-                    completion(.success(responseToken.accessToken))
-                } catch {
-                    completion(.failure(error))
-                    print("Error decoding token response: ", error)
-                }
+        let task = object(for: request) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let body):
+                let authToken = body.accessToken
+                self.authToken = authToken
+                completion(.success(authToken))
             case .failure(let error):
                 completion(.failure(error))
-                print("Network error: ", error)
             }
         }
-        task?.resume()
+        self.task = task
+        task.resume()
+    }
+}
+
+extension OAuth2Service {
+    
+    private func authTokenRequest(code: String) -> URLRequest? {
+        guard let baseURL = URL(string: "https://unsplash.com") else {
+            print("Fail to create baseURL")
+            return nil
+        }
+        guard let url = URL(
+            string: "/oauth/token"
+            + "?client_id=\(Constants.accessKey)"
+            + "&&client_secret=\(Constants.secretKey)"
+            + "&&redirect_uri=\(Constants.redirectURI)"
+            + "&&code=\(code)"
+            + "&&grant_type=authorization_code",
+            relativeTo: baseURL
+        )
+        else {
+            print("Fail to create URL")
+            return nil
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        return request
+    }
+    
+    private struct OAuthTokenResponseBody: Decodable {
+        let accessToken: String
+        let tokenType: String
+        let scope: String
+        let createdAt: Int
+        enum CodingKeys: String, CodingKey {
+            case accessToken = "access_token"
+            case tokenType = "token_type"
+            case scope
+            case createdAt = "created_at"
+        }
+    }
+    
+    private func object(for request: URLRequest, completion: @escaping (Result<OAuthTokenResponseBody, Error>) -> Void
+    ) -> URLSessionTask {
+        return urlSession.objectTask(for: request, completion: { (result: Result<OAuthTokenResponseBody, Error>) in
+            switch result {
+            case .success(let body):
+                completion(.success(body))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        })
     }
 }
