@@ -16,9 +16,23 @@ final class ProfileImageService {
     private let token = OAuth2TokenStorage().token
     private var lastCode: String?
     private (set) var profileImageURL: String?
+    
+    private init(){}
 
     private enum NetworkError: Error {
         case codeError
+        case invalidRequest
+    }
+    
+    func makeHTTPRequest(token: String, username: String) -> URLRequest? {
+        guard let url = URL(string: "https://api.unsplash.com/users/\(username)") else {
+            print("Error creating URL for profile image request")
+            return nil
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        return request
     }
 
     func fetchProfileImageURL(token: String, username: String, _ completion: @escaping (Result<String, Error>) -> Void) {
@@ -26,9 +40,12 @@ final class ProfileImageService {
         if lastCode == token { return }
         task?.cancel()
         lastCode = token
+        
+        guard let request = makeHTTPRequest(token: token, username: username) else {
+            completion(.failure(NetworkError.invalidRequest))
+            return
+        }
 
-        var request = URLRequest.makeHTTPRequest(path: "/users/" + "\(username)", httpMethod: "GET")
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         let session = URLSession.shared
         let task = session.objectTask(for: request, completion: { [weak self] (result: Result<UserResult, Error>) in
             guard let self = self else { return }
@@ -43,6 +60,7 @@ final class ProfileImageService {
                         object: self,
                         userInfo: ["URL": profileImageURL])
             case .failure(let error):
+                print("Error fetching profile image: \(error.localizedDescription)")
                 completion(.failure(error))
             }
         })

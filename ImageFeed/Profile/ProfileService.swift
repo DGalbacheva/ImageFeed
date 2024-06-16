@@ -13,6 +13,8 @@ final class ProfileService {
     private var task: URLSessionTask?
     private var lastCode: String?
     private (set) var profile: Profile?
+    
+    private init(){}
 
     private enum NetworkError: Error {
         case codeError
@@ -41,6 +43,7 @@ final class ProfileService {
                 self.profile = newProfile
                 completion(.success(newProfile))
             case .failure(let error):
+                print("Error fetching profile: \(error.localizedDescription)")
                 completion(.failure(error))
             }
         })
@@ -68,7 +71,8 @@ final class ProfileService {
 
 extension ProfileService {
     private func makeRequest(token: String) -> URLRequest? {
-        guard let url = URL(string: "https://api.unsplash.com/users/" + "/me") else { assertionFailure("Failed to create URL")
+        guard let url = URL(string: "https://api.unsplash.com/users/" + "/me") else { 
+            print("Error creating URL for profile request")
             return nil
         }
         var request = URLRequest(url: url)

@@ -24,14 +24,15 @@ final class SplashViewController: UIViewController {
         super.viewDidAppear(animated)
         
         if let token = oauth2TokenStorage.token {
-            fetchProfile(token: token)
+            fetchProfile(token)
         } else {
             let storyBoard = UIStoryboard(name: "Main", bundle: nil)
             guard let authViewController = storyBoard.instantiateViewController(withIdentifier: "AuthViewController")
                     as? AuthViewController else { return }
             authViewController.delegate = self
-            authViewController.modalPresentationStyle = .fullScreen
-            return present(authViewController, animated: true)
+            let navigationController = UINavigationController(rootViewController: authViewController)
+            navigationController.modalPresentationStyle = .fullScreen
+            return present(navigationController, animated: true)
         }
     }
     
@@ -71,42 +72,51 @@ final class SplashViewController: UIViewController {
 extension SplashViewController: AuthViewControllerDelegate {
     func authViewController(_ vc: AuthViewController, didAuthenticateWithCode code: String) {
         UIBlockingProgressHUD.show()
-        dismiss(animated: true) //{ [weak self] in
-            //guard let self = self else { return }
+        dismiss(animated: true) { [weak self] in
+            guard let self = self else { return }
             self.fetchOAuthToken(code)
+        }
+    }
+    
+    func didAuthenticate(_ vc: AuthViewController) {
+        vc.dismiss(animated: true)
+        //print("didAuthenticate worked")
     }
     
     private func fetchOAuthToken(_ code: String) {
         oauth2Service.fetchOAuthToken(code) { [weak self] result in
             guard let self = self else { return }
             switch result {
-            case .success(let token):
-                self.fetchProfile(token: token)
-                UIBlockingProgressHUD.dismiss()
+            case .success:
+                //self.fetchProfile(token)
+                self.switchToTabBarController()
+                //UIBlockingProgressHUD.dismiss()
                 //print("Successfully fetched", token)
+                //self.switchToTabBarController()
             case .failure(let error):
-                UIBlockingProgressHUD.dismiss()
-                self.showAlert()
+                //UIBlockingProgressHUD.dismiss()
                 print("Failed to fetch", error)
-                break
+                self.showAlert()
             }
         }
     }
     
-    private func fetchProfile(token: String) {
-        //UIBlockingProgressHUD.show()
-        profileService.fetchProfile(token, completion: { [weak self] result in
-           // UIBlockingProgressHUD.dismiss()
+    private func fetchProfile(_ token: String) {
+        UIBlockingProgressHUD.show()
+        profileService.fetchProfile(token, completion:  { [weak self] result in
+            UIBlockingProgressHUD.dismiss()
             guard let self = self else { return }
             switch result {
             case .success(let profile):
-                UIBlockingProgressHUD.dismiss()
-                self.fetchProfileImage(token: token, username: profile.username)
+                 //UIBlockingProgressHUD.dismiss()
+                profileImageService.fetchProfileImageURL(token: token, username: profile.username) { _ in }
+                //self.fetchProfileImage(token: token, username: profile.username)
                 self.switchToTabBarController()
-            case .failure:
-                UIBlockingProgressHUD.dismiss()
+            case .failure(let error):
+                //UIBlockingProgressHUD.dismiss()
+                print("Error in parsing data: \(error.localizedDescription)")
                 self.showAlert()
-                break
+               // break
             }
         })
     }

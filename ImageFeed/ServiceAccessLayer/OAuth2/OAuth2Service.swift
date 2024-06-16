@@ -31,6 +31,7 @@ final class OAuth2Service {
         lastCode = code
         
         guard let request = authTokenRequest(code: code) else {
+            print("Error creating URL request for OAuth token")
             completion(.failure(NetworkError.urlSessionError))
             return
         }
@@ -42,6 +43,7 @@ final class OAuth2Service {
                 self.authToken = authToken
                 completion(.success(authToken))
             case .failure(let error):
+                print("Error fetching OAuth token: \(error)")
                 completion(.failure(error))
             }
         }
@@ -54,7 +56,7 @@ extension OAuth2Service {
     
     private func authTokenRequest(code: String) -> URLRequest? {
         guard let baseURL = URL(string: "https://unsplash.com") else {
-            print("Fail to create baseURL")
+            print("Error creating base URL for OAuth token request")
             return nil
         }
         guard let url = URL(
@@ -67,7 +69,7 @@ extension OAuth2Service {
             relativeTo: baseURL
         )
         else {
-            print("Fail to create URL")
+            print("Error creating URL for OAuth token request")
             return nil
         }
         var request = URLRequest(url: url)
@@ -95,6 +97,7 @@ extension OAuth2Service {
             case .success(let body):
                 completion(.success(body))
             case .failure(let error):
+                print("Error fetching OAuth token response: \(error)")
                 completion(.failure(error))
             }
         })

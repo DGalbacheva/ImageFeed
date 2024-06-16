@@ -9,6 +9,7 @@ import UIKit
 
 //AuthViewControllerDelegate
 protocol AuthViewControllerDelegate: AnyObject {
+    //func didAuthenticate(_ vc: AuthViewController)
     func authViewController(_ vc: AuthViewController, didAuthenticateWithCode code: String)
 }
 
@@ -42,18 +43,37 @@ final class AuthViewController: UIViewController {
         navigationItem.backBarButtonItem = UIBarButtonItem(title: "", style: .plain, target: nil, action: nil)
         navigationItem.backBarButtonItem?.tintColor = UIColor(named: "ypBlack")
     }
+    
+    func showAlert() {
+        let alert = UIAlertController(title: "Что-то пошло не так(", message: "Не удалось войти в систему", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Ок", style: .default, handler: nil))
+        present(alert, animated: true, completion: nil)
+    }
 }
 
 //WebViewControllerDelegate
 extension AuthViewController: WebViewViewControllerDelegate {
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
-        vc.dismiss(animated: true)
-            //UIBlockingProgressHUD.dismiss()
-            delegate?.authViewController(self, didAuthenticateWithCode: code)
+        //vc.dismiss(animated: true)
+        UIBlockingProgressHUD.show()
+        OAuth2Service.shared.fetchOAuthToken(code) { [weak self] result in
+            guard let self = self else { return }
+            UIBlockingProgressHUD.dismiss()
+            switch result {
+            case .success(let token):
+                //self.delegate?.didAuthenticate(self)
+                self.delegate?.authViewController(self, didAuthenticateWithCode: code)
+                print("Successfully fetched OAuth token: ", token)
+            case .failure(let error):
+                print("Failed to fetch OAuth token: ", error)
+                //self.showAlert()
+            }
+        }
+           // delegate?.authViewController(self, didAuthenticateWithCode: code)
     }
     
     func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
-       // dismiss(animated: true)
+        dismiss(animated: true)
     }
 }
 

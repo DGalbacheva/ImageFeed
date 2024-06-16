@@ -64,7 +64,10 @@ final class ProfileViewController: UIViewController {
         viewsSetting()
         applyConstrains()
         
-        updateProfileDetails(profile: profileService.profile!)
+        if let profile = profileService.profile {
+            updateProfileDetails(profile: profile)
+        }
+        
         updateAvatar()
 
         profileImageServiceObserver = NotificationCenter.default
