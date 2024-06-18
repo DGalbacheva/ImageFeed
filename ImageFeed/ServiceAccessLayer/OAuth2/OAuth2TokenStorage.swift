@@ -20,5 +20,9 @@ final class OAuth2TokenStorage {
             KeychainWrapper.standard.set(newValue, forKey: accessToken)
         }
     }
+    
+    func newToken(token: String) {
+        self.token = token
+    }
 }
 

@@ -9,13 +9,14 @@ import UIKit
 
 //AuthViewControllerDelegate
 protocol AuthViewControllerDelegate: AnyObject {
-    //func didAuthenticate(_ vc: AuthViewController)
     func authViewController(_ vc: AuthViewController, didAuthenticateWithCode code: String)
 }
 
 final class AuthViewController: UIViewController {
     static let shared = AuthViewController()
     private let showWebViewSegueIdentifier = "ShowWebView"
+    private let oauth2Service = OAuth2Service.shared
+    private let oauth2TokenStorage = OAuth2TokenStorage()
     weak var delegate: AuthViewControllerDelegate?
     
     override func viewDidLoad() {
@@ -44,32 +45,31 @@ final class AuthViewController: UIViewController {
         navigationItem.backBarButtonItem?.tintColor = UIColor(named: "ypBlack")
     }
     
-    func showAlert() {
+    private func showAlert() {
         let alert = UIAlertController(title: "Что-то пошло не так(", message: "Не удалось войти в систему", preferredStyle: .alert)
-        alert.addAction(UIAlertAction(title: "Ок", style: .default, handler: nil))
-        present(alert, animated: true, completion: nil)
+        alert.addAction(UIAlertAction(title: "Ок", style: .default))
+        self.present(alert, animated: true)
     }
 }
 
 //WebViewControllerDelegate
 extension AuthViewController: WebViewViewControllerDelegate {
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
-        //vc.dismiss(animated: true)
+        vc.dismiss(animated: true)
         UIBlockingProgressHUD.show()
         OAuth2Service.shared.fetchOAuthToken(code) { [weak self] result in
             guard let self = self else { return }
             UIBlockingProgressHUD.dismiss()
             switch result {
             case .success(let token):
-                //self.delegate?.didAuthenticate(self)
+                print("Sucessfull webViewViewController")
+                self.oauth2TokenStorage.newToken(token: token)
                 self.delegate?.authViewController(self, didAuthenticateWithCode: code)
-                print("Successfully fetched OAuth token: ", token)
-            case .failure(let error):
-                print("Failed to fetch OAuth token: ", error)
-                //self.showAlert()
-            }
-        }
-           // delegate?.authViewController(self, didAuthenticateWithCode: code)
+            case .failure(_):
+                print("Error in function webViewViewController")
+                //AlertPresenter().presentAlert(on: self)
+            }} 
+       // delegate?.authViewController(self, didAuthenticateWithCode: code)
     }
     
     func webViewViewControllerDidCancel(_ vc: WebViewViewController) {

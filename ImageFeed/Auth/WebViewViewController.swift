@@ -31,37 +31,26 @@ final class WebViewViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        estimatedProgressObservation = webView.observe(
-            \.estimatedProgress,
-             changeHandler: { [weak self] _, _ in
-                 guard let self = self else { return }
-                 self.updateProgress()
-             })
-        //updateProgress()
         webView.navigationDelegate = self
         loadAuthView()
+        updateProgress()
+        startObserveOnLoadProgress()
+        
     }
     
     private func updateProgress() {
         progressView.progress = Float(webView.estimatedProgress)
         progressView.isHidden = fabs(webView.estimatedProgress - 1.0) <= 0.0001
     }
-}
-
-extension WebViewViewController: WKNavigationDelegate {
-    func webView(
-        _ webView: WKWebView,
-        decidePolicyFor navigationAction: WKNavigationAction,
-        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
-    ) {
-        if let code = fetchCode(from: navigationAction.request.url) {
-            print("Access")
-            delegate?.webViewViewController(self, didAuthenticateWithCode: code)
-            decisionHandler(.cancel)
-        } else {
-            print("No access")
-            decisionHandler(.allow)
-        }
+    
+    private func startObserveOnLoadProgress() {
+        estimatedProgressObservation = webView.observe(
+            \.estimatedProgress,
+             options: [.new],
+             changeHandler: { [weak self] _, _ in
+                 guard let self = self else { return }
+                 self.updateProgress()
+             })
     }
 }
 
@@ -86,6 +75,23 @@ extension WebViewViewController {
         
         let request = URLRequest(url: url)
         webView.load(request)
+    }
+}
+
+extension WebViewViewController: WKNavigationDelegate {
+    func webView(
+        _ webView: WKWebView,
+        decidePolicyFor navigationAction: WKNavigationAction,
+        decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
+    ) {
+        if let code = fetchCode(from: navigationAction.request.url) {
+            print("Access")
+            delegate?.webViewViewController(self, didAuthenticateWithCode: code)
+            decisionHandler(.cancel)
+        } else {
+            print("No access")
+            decisionHandler(.allow)
+        }
     }
 
     func fetchCode(from url: URL?) -> String? {
