@@ -45,17 +45,15 @@ final class ImagesListViewController: UIViewController {
             
             let image = UIImage(named: photosName[indexPath.row])
             viewController.image = image
+            let largeImageUrl = photos[indexPath.row].largeImageURL
+            guard let imageUrl = URL(string: largeImageUrl) else {
+                return
+            }
+            viewController.largeImageURL = imageUrl
         } else {
             super.prepare(for: segue, sender: sender)
         }
     }
-    
-   /* func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
-        let lastIndexPath = photos.count - 1
-        if indexPath.row == lastIndexPath {
-            imagesListService.fetchPhotosNextPage()
-        }
-    } */
     
     func updateTableViewAnimated() {
         let oldCount = photos.count
@@ -96,6 +94,7 @@ extension ImagesListViewController: UITableViewDataSource {
             return UITableViewCell()
         }
 
+        imageListCell.delegate = self
         configCell(for: imageListCell, with: indexPath)
 
         return imageListCell
@@ -134,9 +133,8 @@ extension ImagesListViewController {
             cell.dateLabel.text = ""
         }
         
-        var likeImage = UIImage(named: indexPath.row % 2 == 0 ? "like_button_on" : "like_button_off")
-        likeImage = UIImage(named: photos[indexPath.row].isLiked ? "like_button_on" : "like_button_off")
-        cell.likeButton.setImage(likeImage, for: .normal)
+//        let likeImage = photos[indexPath.row].isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
+//        cell.likeButton.setImage(likeImage, for: .normal)
     }
 }
 
@@ -150,11 +148,11 @@ extension ImagesListViewController: UITableViewDelegate {
         tableView.deselectRow(at: indexPath, animated: true)
         performSegue(withIdentifier: showSingleImageSegueIdentifier, sender: indexPath)
     }
-
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-//        guard let image = UIImage(named: photosName[indexPath.row]) else {
-//            return 0
-//        }
+        //        guard let image = UIImage(named: photosName[indexPath.row]) else {
+        //            return 0
+        //        }
         
         let image = photos[indexPath.row]
         
@@ -164,5 +162,25 @@ extension ImagesListViewController: UITableViewDelegate {
         let scale = imageViewWidth / imageWidth
         let cellHeight = image.size.height * scale + imageInsets.top + imageInsets.bottom
         return cellHeight
+    }
+}
+
+extension ImagesListViewController: ImagesListCellDelegate {
+    func imageListCellDidTapLike(_ cell: ImagesListCell) {
+        guard let indexPath = tableView.indexPath(for: cell) else { return }
+        let photo = photos[indexPath.row]
+        
+        UIBlockingProgressHUD.show()
+        imagesListService.changeLike(photoId: photo.id, isLike: !photo.isLiked) { result in
+            switch result {
+            case .success:
+                self.photos = self.imagesListService.photos
+                cell.imageLiked(isLiked: self.photos[indexPath.row].isLiked)
+                UIBlockingProgressHUD.dismiss()
+            case .failure:
+                UIBlockingProgressHUD.dismiss()
+                
+            }
+        }
     }
 }

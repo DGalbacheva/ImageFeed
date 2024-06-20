@@ -13,7 +13,7 @@ struct Photo {
     let createdAt: Date?
     var welcomeDescription: String?
     var thumbImageURL: String
-    var fullImageURL: String
+    var largeImageURL: String
     var isLiked: Bool
     let regularImageURL: String
 }

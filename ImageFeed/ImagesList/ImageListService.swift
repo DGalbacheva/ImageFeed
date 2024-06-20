@@ -55,7 +55,7 @@ final class ImagesListService {
                             createdAt: self.formattedDate($0.createdAt),
                             welcomeDescription: $0.description,
                             thumbImageURL: $0.urls.thumb,
-                            fullImageURL: $0.urls.full,
+                            largeImageURL: $0.urls.full,
                             isLiked: $0.likedByUser,
                             regularImageURL: $0.urls.regular)
                         )
@@ -75,16 +75,21 @@ final class ImagesListService {
     }
     
     func makeHTTPPhotoRequest(page: Int) -> URLRequest? {
+        guard let token = oAuthTokenStorage.token else {
+            return nil
+        }
+        
         var components = URLComponents(string: "https://api.unsplash.com/photos")
         components?.queryItems = [
             URLQueryItem(name: "page", value: "\(page)"),
             URLQueryItem(name: "per_page", value: "10"),
             URLQueryItem(name: "client_id", value: "UtikJ6aDHAwv8C_JVCEbQLQJ7ldEw_D3LVCSYvRfiyI")
         ]
-
+        
         guard let url = components?.url else { return nil }
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         return request
         
     }
@@ -105,9 +110,66 @@ final class ImagesListService {
             createdAt: date,
             welcomeDescription: photo.description,
             thumbImageURL: photo.urls.thumb,
-            fullImageURL: photo.urls.full,
+            largeImageURL: photo.urls.full,
             isLiked: photo.likedByUser,
             regularImageURL: photo.urls.regular)
     }
+    
+    func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void) {
+       // var httpMethod: String
+        
+        guard let token = oAuthTokenStorage.token else { return }
+        
+        let likeUrl = Constants.likeURL + "\(photoId)/like"
+        guard let url = URL(string: likeUrl) else { return }
+        
+        var request = URLRequest(url: url)
+        request.httpMethod = isLike ? "DELETE" : "POST"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        
+        let session = URLSession.shared
+        let task = session.dataTask(with: request) { [weak self] data, response, error in
+            guard let self = self else {
+                return
+            }
+            if let statusCode = (response as? HTTPURLResponse)?.statusCode {
+                guard 200 ..< 300 ~= statusCode else {
+                    let errorMessage = HTTPURLResponse.localizedString(forStatusCode: statusCode)
+                    print("[objectTask]: HTTP error - status code \(statusCode), message: \(errorMessage)")
+                    return
+                }
+            }
+            if let error = error {
+                print("Error fetching like: \(error)")
+                return
+            }
+            if let index = self.photos.firstIndex(where: { $0.id == photoId}) {
+                let photo = self.photos[index]
+                let newPhoto = Photo(
+                    id: photo.id,
+                    size: photo.size,
+                    createdAt: photo.createdAt,
+                    thumbImageURL: photo.thumbImageURL,
+                    largeImageURL: photo.largeImageURL,
+                    isLiked: isLike,
+                    regularImageURL: photo.regularImageURL)
+                DispatchQueue.main.async {
+                    self.photos[index] = newPhoto
+                    NotificationCenter.default.post(
+                        name: ImagesListService.didChangeNotification,
+                        object: self,
+                        userInfo: ["photos": self.photos])
+                    completion(.success(()))
+                }
+            } else {
+                DispatchQueue.main.async {
+                    completion(.failure(NSError(
+                        domain: "Error: Photo not found",
+                        code: 0,
+                        userInfo: nil)))
+                }
+            }
+        }
+        task.resume()
+    }
 }
-

@@ -16,4 +16,5 @@ enum Constants {
     static let defaultBaseURL = URL(string: "https://api.unsplash.com")
     
     static let imageURL = "https://api.unsplash.com/photos?page="
+    static let likeURL = "https://api.unsplash.com/photos/"
 }

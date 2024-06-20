@@ -140,13 +140,6 @@
 			path = ImageFeedModels;
 			sourceTree = "<group>";
 		};
-		E4807F382C22D43900155541 /* New Group */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = "New Group";
-			sourceTree = "<group>";
-		};
 		E4860A7E2BCD61B40041CD02 /* SingleImageView */ = {
 			isa = PBXGroup;
 			children = (
@@ -158,7 +151,6 @@
 		E48EFB902BBA948B0015A7D1 = {
 			isa = PBXGroup;
 			children = (
-				E4807F382C22D43900155541 /* New Group */,
 				E4807F2F2C22CA0700155541 /* ImageFeedModels */,
 				E4807F192C21454200155541 /* Alert */,
 				E41C52D02C1BA46D00B8AB63 /* NetworkClient.swift */,
