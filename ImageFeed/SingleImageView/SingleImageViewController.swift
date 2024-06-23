@@ -6,11 +6,12 @@
 //
 
 import UIKit
+import Kingfisher
 
 final class SingleImageViewController: UIViewController {
-    var largeImageURL: URL?
+    var imageURL: URL?
     
-    var image: UIImage? {
+    /*var image: UIImage? {
         didSet {
             guard isViewLoaded, let image else { return }
             
@@ -18,9 +19,9 @@ final class SingleImageViewController: UIViewController {
             imageView.frame.size = image.size
             rescaleAndCenterImageInScrollView(image: image)
         }
-    }
+    }*/
     
-    @IBOutlet private weak var imageView: UIImageView!
+    @IBOutlet weak var imageView: UIImageView!
     @IBOutlet private var scrollView: UIScrollView!
     
     override func viewDidLoad() {
@@ -28,10 +29,7 @@ final class SingleImageViewController: UIViewController {
         scrollView.minimumZoomScale = 0.1
         scrollView.maximumZoomScale = 1.25
         
-        guard let image else { return }
-        imageView.image = image
-        imageView.frame.size = image.size
-        rescaleAndCenterImageInScrollView(image: image)
+        setImage()
     }
     
     @IBAction func didTapBackButton(_ sender: Any) {
@@ -39,7 +37,7 @@ final class SingleImageViewController: UIViewController {
     }
     
     @IBAction func didTapShareButton(_ sender: UIButton) {
-        guard let image else { return }
+        guard let image = imageView.image else { return }
         let share = UIActivityViewController(
             activityItems: [image],
             applicationActivities: nil
@@ -68,5 +66,35 @@ final class SingleImageViewController: UIViewController {
 extension SingleImageViewController: UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         imageView
+    }
+}
+
+extension SingleImageViewController {
+    private func setImage() {
+        UIBlockingProgressHUD.show()
+        imageView.kf.setImage(with: imageURL,
+                              placeholder: UIImage(named: "placeholderIcon"),
+                              options: nil) { [weak self] result in
+            UIBlockingProgressHUD.dismiss()
+            
+            guard let self else { return }
+            switch result {
+            case .success(let imageResult):
+                self.imageView.frame.size = imageResult.image.size
+                self.rescaleAndCenterImageInScrollView(image: imageResult.image)
+            case .failure:
+                print("Error: image could not load")
+                self.showAlert()
+            }
+        }
+    }
+    
+    func showAlert() {
+        let alert = UIAlertController(title: "Ошибка загрузки", message: "Что-то пошло не так. Попробовать еще раз?", preferredStyle: .alert)
+        alert.addAction(UIAlertAction(title: "Не надо", style: .default))
+        alert.addAction(UIAlertAction(title: "Повторить", style: .default, handler: { (action: UIAlertAction) in
+            self.setImage()
+        }))
+        self.present(alert, animated: true)
     }
 }

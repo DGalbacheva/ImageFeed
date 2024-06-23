@@ -14,11 +14,14 @@ final class ProfileViewController: UIViewController {
     private let profileService = ProfileService.shared
     private let profileImageService = ProfileImageService.shared
     private var profileImageServiceObserver: NSObjectProtocol?
+    private let profileLogoutService = ProfileLogoutService.shared
     
     //MARK: - UI elements
     private var imageView: UIImageView = {
         let avatarImage = UIImage(named: "avatar")
         let imageView = UIImageView(image: avatarImage)
+        imageView.layer.cornerRadius = 35
+        imageView.clipsToBounds = true
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
@@ -53,6 +56,7 @@ final class ProfileViewController: UIViewController {
     private var logoutButton: UIButton = {
         let logoutButton = UIButton(type: .custom)
         logoutButton.setImage(UIImage(named: "logout_button"), for: .normal)
+        logoutButton.addTarget(self, action: #selector(logoutButtonPressed), for: .touchUpInside)
         logoutButton.tintColor = .ypRed
         logoutButton.translatesAutoresizingMaskIntoConstraints = false
         return logoutButton
@@ -61,6 +65,7 @@ final class ProfileViewController: UIViewController {
     //MARK: Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        view.backgroundColor = .ypBlack
         viewsSetting()
         applyConstrains()
         
@@ -125,7 +130,21 @@ final class ProfileViewController: UIViewController {
                 let profileImageURL = profileImageService.profileImageURL,
                 let url = URL(string: profileImageURL)
             else { return }
-            let processor = RoundCornerImageProcessor(cornerRadius: 61)
+            let processor = RoundCornerImageProcessor(cornerRadius: 50)
             imageView.kf.setImage(with: url, options: [.processor(processor)])
         }
+    
+    @objc 
+    func logoutButtonPressed(_ sender: UIButton) {
+        let alert = UIAlertController(title: "Пока, пока!", message: "Уверены что хотите выйти??", preferredStyle: .alert)
+        let actionNo = UIAlertAction(title: "Нет", style: .cancel) { action in }
+        let actionYes = UIAlertAction(title: "Да", style: .default) { [weak self] _ in
+            guard let self = self else {return}
+            profileLogoutService.logout()
+        }
+        alert.addAction(actionNo)
+        alert.addAction(actionYes)
+        present(alert, animated: true)
+        
+    }
 }

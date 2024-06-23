@@ -43,13 +43,13 @@ final class ImagesListViewController: UIViewController {
                 return
             }
             
-            let image = UIImage(named: photosName[indexPath.row])
-            viewController.image = image
+            //let image = UIImage(named: photosName[indexPath.row])
+            //viewController.image = image
             let largeImageUrl = photos[indexPath.row].largeImageURL
             guard let imageUrl = URL(string: largeImageUrl) else {
                 return
             }
-            viewController.largeImageURL = imageUrl
+            viewController.imageURL = imageUrl
         } else {
             super.prepare(for: segue, sender: sender)
         }
@@ -133,8 +133,8 @@ extension ImagesListViewController {
             cell.dateLabel.text = ""
         }
         
-//        let likeImage = photos[indexPath.row].isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
-//        cell.likeButton.setImage(likeImage, for: .normal)
+        let likeImage = UIImage(named: photos[indexPath.row].isLiked ? "like_button_on" : "like_button_off")
+        cell.likeButton.setImage(likeImage, for: .normal)
     }
 }
 
