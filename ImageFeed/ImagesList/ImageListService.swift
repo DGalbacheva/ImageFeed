@@ -116,7 +116,13 @@ final class ImagesListService {
     }
     
     func changeLike(photoId: String, isLike: Bool, _ completion: @escaping (Result<Void, Error>) -> Void) {
-       // var httpMethod: String
+        var httpMethod: String
+        
+        if !isLike {
+            httpMethod = "DELETE"
+        } else {
+            httpMethod = "POST"
+        }
         
         guard let token = oAuthTokenStorage.token else { return }
         
@@ -124,7 +130,7 @@ final class ImagesListService {
         guard let url = URL(string: likeUrl) else { return }
         
         var request = URLRequest(url: url)
-        request.httpMethod = isLike ? "DELETE" : "POST"
+        request.httpMethod = httpMethod
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         
         let session = URLSession.shared
