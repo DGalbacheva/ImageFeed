@@ -43,8 +43,6 @@ final class ImagesListViewController: UIViewController {
                 return
             }
             
-            //let image = UIImage(named: photosName[indexPath.row])
-            //viewController.image = image
             let largeImageUrl = photos[indexPath.row].largeImageURL
             guard let imageUrl = URL(string: largeImageUrl) else {
                 return
@@ -103,12 +101,7 @@ extension ImagesListViewController: UITableViewDataSource {
 
 extension ImagesListViewController {
     func configCell(for cell: ImagesListCell, with indexPath: IndexPath) {
-//        guard let image = UIImage(named: photosName[indexPath.row]) else {
-//            return
-//        }
-//
-//        cell.cellImage.image = image
-//        cell.dateLabel.text = dateFormatter.string(from: Date())
+
 
         let largeImageURL = photos[indexPath.row].regularImageURL
         guard let imageUrl = URL(string: largeImageURL) else { return }
@@ -150,10 +143,6 @@ extension ImagesListViewController: UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        //        guard let image = UIImage(named: photosName[indexPath.row]) else {
-        //            return 0
-        //        }
-        
         let image = photos[indexPath.row]
         
         let imageInsets = UIEdgeInsets(top: 4, left: 16, bottom: 4, right: 16)

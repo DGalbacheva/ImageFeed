@@ -17,7 +17,7 @@ final class ImagesListService {
     private let session = URLSession.shared
     private let formatter = ISO8601DateFormatter()
     
-    init(){}
+    private init(){}
     
     func fetchPhotosNextPage() {
         guard task == nil else { return }
