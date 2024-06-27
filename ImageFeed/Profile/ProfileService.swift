@@ -50,6 +50,12 @@ final class ProfileService {
         self.task = task
         task.resume()
     }
+    
+    func removeData() {
+        profile = nil
+        lastCode = nil
+        task = nil
+    }
 
     struct ProfileResult: Codable {
         let userName, firstName, lastName: String

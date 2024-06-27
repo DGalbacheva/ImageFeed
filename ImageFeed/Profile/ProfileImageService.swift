@@ -69,7 +69,7 @@ final class ProfileImageService {
     }
 
     struct UserResult: Codable {
-        let profileImage: ProfileImageURL
+        var profileImage: ProfileImageURL
 
         enum CodingKeys: String, CodingKey {
             case profileImage = "profile_image"
@@ -80,5 +80,13 @@ final class ProfileImageService {
         let small: String
         let medium: String
         let large: String
+    }
+    
+    func removeData() {
+        profileImageURL = nil
+        //profileImage = nil
+        lastCode = nil
+        task = nil
+        
     }
 }
