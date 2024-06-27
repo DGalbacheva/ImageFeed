@@ -8,7 +8,7 @@
 import ImageFeed
 import UIKit
 
-final class ProfileViewControllerSpy: ProfileViewControllerProtocol {
+final class MockProfileViewController: ProfileViewControllerProtocol {
     var presenter: ProfilePresenterProtocol?
     var profileAvatar: UIImage?
     

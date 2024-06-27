@@ -77,7 +77,7 @@ final class ProfileService {
 
 extension ProfileService {
     private func makeRequest(token: String) -> URLRequest? {
-        guard let url = URL(string: "https://api.unsplash.com/users/" + "/me") else { 
+        guard let url = URL(string: "https://api.unsplash.com/users/" + "/me") else {
             print("Error creating URL for profile request")
             return nil
         }
