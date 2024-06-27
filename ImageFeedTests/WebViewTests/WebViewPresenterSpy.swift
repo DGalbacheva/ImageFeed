@@ -14,6 +14,9 @@ final class WebViewPresenterSpy: WebViewPresenterProtocol {
     
     func viewDidLoad() {
         viewDidLoadCalled = true
+        let url: URL = URL(string: "https://api.unsplash.com")!
+        let request = URLRequest(url: url)
+        view?.load(request: request)
     }
     
     func didUpdateProgressValue(_ newValue: Double) {
