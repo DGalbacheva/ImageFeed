@@ -7,7 +7,11 @@
 
 import UIKit
 
-final class ImagesListService {
+public protocol ImagesListServiceProtocol: AnyObject {
+    func fetchPhotosNextPage()
+}
+
+final class ImagesListService: ImagesListServiceProtocol {
     static let didChangeNotification = Notification.Name("ImagesListServiceDidChange")
     static let shared = ImagesListService()
     private var task: URLSessionTask?

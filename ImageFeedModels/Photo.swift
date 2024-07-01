@@ -7,7 +7,7 @@
 
 import UIKit
 
-struct Photo {
+public struct Photo {
     var id: String
     var size: CGSize
     let createdAt: Date?
