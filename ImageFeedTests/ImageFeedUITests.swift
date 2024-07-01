@@ -19,24 +19,29 @@ class ImageFeedUITests: XCTestCase {
     
     func testAuth() throws {
         // тестируем сценарий авторизации
+        sleep(3)
         app.buttons["Authenticate"].tap()
         
+        sleep(3)
         let webView = app.webViews["UnsplashWebView"]
         
         XCTAssertTrue(webView.waitForExistence(timeout: 5))
         
+        sleep(5)
         let loginTextField = webView.descendants(matching: .textField).element
-        XCTAssertTrue(loginTextField.waitForExistence(timeout: 10))
+        XCTAssertTrue(loginTextField.waitForExistence(timeout: 5))
         
+        sleep(5)
         loginTextField.tap()
-        loginTextField.typeText("Email")
+        loginTextField.typeText("galbachevva@gmail.com")
         XCUIApplication().toolbars.buttons["Done"].tap()
         
+        sleep(5)
         let passwordTextField = webView.descendants(matching: .secureTextField).element
         XCTAssertTrue(passwordTextField.waitForExistence(timeout: 5))
         
         passwordTextField.tap()
-        passwordTextField.typeText("Password")
+        passwordTextField.typeText("#Doroteya13")
         XCUIApplication().toolbars.buttons["Done"].tap()
         
         webView.buttons["Login"].tap()
@@ -77,10 +82,9 @@ class ImageFeedUITests: XCTestCase {
         // тестируем сценарий профиля
         sleep(3)
         app.tabBars.buttons.element(boundBy: 1).tap()
-       // sleep(3)
         
-        XCTAssertTrue(app.staticTexts["Name, LastName"].exists)
-        XCTAssertTrue(app.staticTexts["@username"].exists)
+        XCTAssertTrue(app.staticTexts["Doroteya Galbacheva"].exists)
+        XCTAssertTrue(app.staticTexts["@doroteyag"].exists)
         sleep(3)
         app.buttons["logout button"].tap()
         sleep(3)
@@ -90,6 +94,6 @@ class ImageFeedUITests: XCTestCase {
         
         app.alerts["Пока, пока!"].scrollViews.otherElements.buttons["Да"].tap()
         
-        //XCTAssertTrue(app.buttons["Authenticate"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["Authenticate"].waitForExistence(timeout: 3))
     }
 }

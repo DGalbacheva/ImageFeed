@@ -9,7 +9,7 @@ import ImageFeed
 import UIKit
 
 final class MockProfilePresenter: ProfilePresenterProtocol {
-    var view: (any ImageFeed.ProfileViewControllerProtocol)?
+    var view: ImageFeed.ProfileViewControllerProtocol?
     var viewDidLoadCalled: Bool = false
     let logoutService = ProfileLogoutServiceSpy()
 
