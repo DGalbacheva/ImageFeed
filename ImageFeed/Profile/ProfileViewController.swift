@@ -22,8 +22,6 @@ final class ProfileViewController: UIViewController & ProfileViewControllerProto
     private let storageToken = OAuth2TokenStorage()
     private let profileService = ProfileService.shared
     private let profileImageService = ProfileImageService.shared
-    //private var profileImageServiceObserver: NSObjectProtocol?
-    //private let profileLogoutService = ProfileLogoutService.shared
     
     //MARK: - UI elements
     private var imageView: UIImageView = {
@@ -135,7 +133,6 @@ final class ProfileViewController: UIViewController & ProfileViewControllerProto
         let actionNo = UIAlertAction(title: "Нет", style: .cancel) { action in }
         let actionYes = UIAlertAction(title: "Да", style: .default) { [weak self] _ in
             guard let self = self else { return }
-            //profileLogoutService.logout()
             presenter?.logoutProfile()
         }
         alert.addAction(actionNo)

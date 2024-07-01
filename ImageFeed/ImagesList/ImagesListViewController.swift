@@ -95,7 +95,7 @@ extension ImagesListViewController: ImagesListCellDelegate {
     internal func showErrorAlert(error: Error) {
         let alert = UIAlertController(
             title: "Ошибка при лайке",
-            message: "Не удалось изменить лайк: /(error.localizedDescription)",
+            message: "Не удалось изменить лайк: \(error.localizedDescription)",
             preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Ok", style: .default))
         present(alert, animated: true)
