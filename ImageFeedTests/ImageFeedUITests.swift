@@ -34,7 +34,7 @@ class ImageFeedUITests: XCTestCase {
         sleep(5)
         loginTextField.tap()
         sleep(3)
-        loginTextField.typeText("email")
+        loginTextField.typeText("galbachevva@gmail.com")
         sleep(5)
         XCUIApplication().toolbars.buttons["Done"].tap()
         
@@ -44,7 +44,9 @@ class ImageFeedUITests: XCTestCase {
         
         sleep(5)
         passwordTextField.tap()
-        passwordTextField.typeText("pass")
+        sleep(5)
+        passwordTextField.typeText("#Doroteya13")
+        sleep(5)
         XCUIApplication().toolbars.buttons["Done"].tap()
         
         sleep(5)
