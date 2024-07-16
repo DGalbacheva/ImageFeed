@@ -19,10 +19,10 @@ class ImageFeedUITests: XCTestCase {
     
     func testAuth() throws {
         // тестируем сценарий авторизации
-        sleep(3)
+        sleep(5)
         app.buttons["Authenticate"].tap()
         
-        sleep(3)
+        sleep(5)
         let webView = app.webViews["UnsplashWebView"]
         
         XCTAssertTrue(webView.waitForExistence(timeout: 5))
@@ -33,7 +33,7 @@ class ImageFeedUITests: XCTestCase {
         
         sleep(5)
         loginTextField.tap()
-        sleep(3)
+        sleep(5)
         loginTextField.typeText("email")
         sleep(5)
         XCUIApplication().toolbars.buttons["Done"].tap()
@@ -42,20 +42,20 @@ class ImageFeedUITests: XCTestCase {
         let passwordTextField = webView.descendants(matching: .secureTextField).element
         XCTAssertTrue(passwordTextField.waitForExistence(timeout: 5))
         
-        sleep(5)
+        sleep(10)
         passwordTextField.tap()
-        sleep(5)
-        passwordTextField.typeText("pass")
-        sleep(5)
+        sleep(10)
+        passwordTextField.typeText("password")
+        sleep(10)
         XCUIApplication().toolbars.buttons["Done"].tap()
         
-        sleep(5)
+        sleep(10)
         webView.buttons["Login"].tap()
         
         let tablesQuery = app.tables
         let cell = tablesQuery.children(matching: .cell).element(boundBy: 0)
         
-        sleep(5)
+        sleep(10)
         
         XCTAssertTrue(cell.waitForExistence(timeout: 5))
     }
@@ -63,18 +63,18 @@ class ImageFeedUITests: XCTestCase {
     func testFeed() throws {
         // тестируем сценарий ленты
         let tablesQuery = app.tables
-        sleep(3)
+        sleep(5)
         tablesQuery.element.swipeUp()
         
         let cellLike = tablesQuery.cells.firstMatch
         let likeButton = cellLike.buttons["LikeButton"]
         likeButton.tap()
-        sleep(2)
+        sleep(5)
         likeButton.tap()
-        sleep(2)
+        sleep(5)
         
         cellLike.tap()
-        sleep(2)
+        sleep(5)
         
         let image = app.scrollViews.images.element(boundBy: 0)
         
@@ -88,14 +88,14 @@ class ImageFeedUITests: XCTestCase {
     
     func testProfile() throws {
         // тестируем сценарий профиля
-        sleep(3)
+        sleep(5)
         app.tabBars.buttons.element(boundBy: 1).tap()
         
         XCTAssertTrue(app.staticTexts["Doroteya Galbacheva"].exists)
         XCTAssertTrue(app.staticTexts["@doroteyag"].exists)
-        sleep(3)
+        sleep(5)
         app.buttons["logout button"].tap()
-        sleep(3)
+        sleep(5)
         //let alert = app.alerts["Пока, пока!"]
         //XCTAssertTrue(alert.exists, "Error: no alert")
         //alert.buttons["Да"].tap()
