@@ -8,7 +8,11 @@
 import Foundation
 import WebKit
 
-final class ProfileLogoutService {
+public protocol ProfileLogoutServiceProtocol: AnyObject {
+    func logout()
+}
+
+final class ProfileLogoutService: ProfileLogoutServiceProtocol {
     static let shared = ProfileLogoutService()
     private let oauthTokenStorage = OAuth2TokenStorage()
     private let profileImageService = ProfileImageService.shared

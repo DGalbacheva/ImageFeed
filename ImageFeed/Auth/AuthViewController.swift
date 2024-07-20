@@ -7,7 +7,6 @@
 
 import UIKit
 
-//AuthViewControllerDelegate
 protocol AuthViewControllerDelegate: AnyObject {
     func authViewController(_ vc: AuthViewController, didAuthenticateWithCode code: String)
 }
@@ -32,6 +31,10 @@ final class AuthViewController: UIViewController {
                 print("Failsed to prepare for \(showWebViewSegueIdentifier)")
                 return
             }
+            let authHelper = AuthHelper()
+            let webViewPresenter = WebViewPresenter(authHelper: authHelper)
+            webViewViewController.presenter = webViewPresenter
+            webViewPresenter.view = webViewViewController
             webViewViewController.delegate = self
         } else {
             super.prepare(for: segue, sender: sender)
@@ -67,9 +70,7 @@ extension AuthViewController: WebViewViewControllerDelegate {
                 self.delegate?.authViewController(self, didAuthenticateWithCode: code)
             case .failure(_):
                 print("Error in function webViewViewController")
-                //AlertPresenter().presentAlert(on: self)
-            }} 
-       // delegate?.authViewController(self, didAuthenticateWithCode: code)
+            }}
     }
     
     func webViewViewControllerDidCancel(_ vc: WebViewViewController) {

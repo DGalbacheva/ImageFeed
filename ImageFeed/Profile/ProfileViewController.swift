@@ -8,13 +8,20 @@
 import UIKit
 import Kingfisher
 
-final class ProfileViewController: UIViewController {
+public protocol ProfileViewControllerProtocol: AnyObject {
+    var presenter: ProfilePresenterProtocol? { get set }
+    func updateProfileDetails(name: String, loginName: String, bio: String)
+    func getNewAvatarValue(image: UIImage)
+    func updateAvatar()
+}
+
+final class ProfileViewController: UIViewController & ProfileViewControllerProtocol {
+    
+    var presenter: ProfilePresenterProtocol?
     
     private let storageToken = OAuth2TokenStorage()
     private let profileService = ProfileService.shared
     private let profileImageService = ProfileImageService.shared
-    private var profileImageServiceObserver: NSObjectProtocol?
-    private let profileLogoutService = ProfileLogoutService.shared
     
     //MARK: - UI elements
     private var imageView: UIImageView = {
@@ -57,6 +64,7 @@ final class ProfileViewController: UIViewController {
         let logoutButton = UIButton(type: .custom)
         logoutButton.setImage(UIImage(named: "logout_button"), for: .normal)
         logoutButton.addTarget(self, action: #selector(logoutButtonPressed), for: .touchUpInside)
+        logoutButton.accessibilityIdentifier = "logout button"
         logoutButton.tintColor = .ypRed
         logoutButton.translatesAutoresizingMaskIntoConstraints = false
         return logoutButton
@@ -68,28 +76,14 @@ final class ProfileViewController: UIViewController {
         view.backgroundColor = .ypBlack
         viewsSetting()
         applyConstrains()
-        
-        if let profile = profileService.profile {
-            updateProfileDetails(profile: profile)
-        }
-        
-        updateAvatar()
-
-        profileImageServiceObserver = NotificationCenter.default
-            .addObserver(
-                forName: ProfileImageService.didChangeNotification,
-                object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                guard let self = self else { return }
-                self.updateAvatar()
-            }
+        imageView.kf.indicatorType = .activity
+        presenter?.viewDidLoad()
     }
     
     //MARK: - Private methods
     private func viewsSetting() {
         [imageView,
-        nameLabel,
+         nameLabel,
          loginNameLabel,
          descriptionLabel,
          logoutButton].forEach{
@@ -119,32 +113,36 @@ final class ProfileViewController: UIViewController {
         ])
     }
     
-    private func updateProfileDetails(profile: ProfileService.Profile) {
-            nameLabel.text = profile.name
-            loginNameLabel.text = profile.loginName
-            descriptionLabel.text = profile.bio
-        }
-
-        private func updateAvatar() {
-            guard
-                let profileImageURL = profileImageService.profileImageURL,
-                let url = URL(string: profileImageURL)
-            else { return }
-            let processor = RoundCornerImageProcessor(cornerRadius: 50)
-            imageView.kf.setImage(with: url, options: [.processor(processor)])
-        }
+    func updateProfileDetails(name: String, loginName: String, bio: String) {
+        nameLabel.text = name
+        loginNameLabel.text = loginName
+        descriptionLabel.text = bio
+    }
     
-    @objc 
+    func updateAvatar() {
+        presenter?.updateAvatar()
+    }
+    
+    func getNewAvatarValue(image: UIImage) {
+        imageView.image = image
+    }
+    
+    @objc
     func logoutButtonPressed(_ sender: UIButton) {
         let alert = UIAlertController(title: "Пока, пока!", message: "Уверены что хотите выйти??", preferredStyle: .alert)
         let actionNo = UIAlertAction(title: "Нет", style: .cancel) { action in }
         let actionYes = UIAlertAction(title: "Да", style: .default) { [weak self] _ in
-            guard let self = self else {return}
-            profileLogoutService.logout()
+            guard let self = self else { return }
+            presenter?.logoutProfile()
         }
         alert.addAction(actionNo)
         alert.addAction(actionYes)
         present(alert, animated: true)
         
+    }
+    
+    func configureProfile(_ presenter: ProfilePresenterProtocol) {
+        self.presenter = presenter
+        presenter.view = self
     }
 }
